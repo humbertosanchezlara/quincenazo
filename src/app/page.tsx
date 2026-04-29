@@ -74,8 +74,8 @@ export default async function HomePage() {
             <p className="text-sm uppercase tracking-[0.3em] text-foreground/45">Entrar</p>
             <h2 className="display-copy mt-3 text-4xl text-foreground">Accede con link mágico.</h2>
             <p className="mt-3 text-sm leading-7 text-foreground/68">
-              Usa Supabase Auth para iniciar sesión sin contraseña. Apenas entres podrás
-              poblar la cuenta con datos de ejemplo y recorrer todo el flujo.
+              Usa Supabase Auth para iniciar sesión sin contraseña y empezar a capturar
+              tus movimientos reales desde el primer minuto.
             </p>
             <div className="mt-6">
               <SignInForm />

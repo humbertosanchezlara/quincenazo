@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCurrentMonthValue } from "@/lib/format";
-import { getCurrentUserOrThrow, seedSampleDataForCurrentUser } from "@/lib/queries";
+import { getCurrentUserOrThrow } from "@/lib/queries";
 
 type ActionState = {
   ok: boolean;
@@ -364,15 +364,4 @@ export async function upsertRecurringAction(
   revalidatePath("/panel");
   revalidatePath("/presupuestos");
   return success("Movimiento recurrente guardado.");
-}
-
-export async function loadSampleDataAction() {
-  const result = await seedSampleDataForCurrentUser();
-  revalidatePath("/panel");
-  revalidatePath("/movimientos");
-  revalidatePath("/presupuestos");
-  revalidatePath("/categorias");
-  revalidatePath("/reportes");
-
-  redirect(`/panel?seed=${result.inserted ? "ok" : "skip"}`);
 }

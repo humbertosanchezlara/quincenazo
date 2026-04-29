@@ -20,7 +20,6 @@ Quincenazo es una app de finanzas personales en `Next.js + Supabase`, en españo
 - Reglas de movimientos recurrentes
 - Sugerencias de categoría por historial de texto
 - Bitácora de auditoría
-- Seed desde UI para poblar una cuenta vacía con datos realistas
 
 ## Variables de entorno
 
@@ -39,7 +38,6 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 3. En Authentication:
    - habilita Email
    - configura el redirect URL a `http://localhost:3000/auth/callback`
-4. En la app, entra con magic link y usa el botón `Cargar datos de ejemplo` para sembrar una cuenta nueva.
 
 ## Desarrollo
 

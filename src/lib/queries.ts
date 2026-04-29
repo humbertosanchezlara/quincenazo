@@ -2,12 +2,6 @@ import "server-only";
 
 import { cache } from "react";
 import { parseISO } from "date-fns";
-import {
-  demoBudgetTargets,
-  demoCategories,
-  demoRecurring,
-  demoTransactions,
-} from "@/lib/demo-data";
 import { getCurrentMonthValue, getMonthBounds } from "@/lib/format";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -325,106 +319,4 @@ export async function getDashboardData(month = getCurrentMonthValue()) {
       .sort((a, b) => a.variance - b.variance)
       .slice(0, 4),
   };
-}
-
-export async function seedSampleDataForCurrentUser() {
-  const user = await getCurrentUserOrThrow();
-  const supabase = await createSupabaseServerClient();
-  if (!supabase) return { inserted: false, reason: "Supabase no configurado." };
-
-  const { count } = await supabase
-    .from("transactions")
-    .select("*", { head: true, count: "exact" })
-    .eq("user_id", user.id);
-
-  if ((count ?? 0) > 0) {
-    return {
-      inserted: false,
-      reason:
-        "Tu cuenta ya tiene movimientos. El seed solo corre en cuentas vacías para evitar duplicados.",
-    };
-  }
-
-  const categoryRows = demoCategories.map((category) => ({
-    user_id: user.id,
-    name: category.name,
-    transaction_type: category.transactionType,
-    color: category.color,
-    icon: category.icon,
-  }));
-
-  const { data: insertedCategories, error: categoryError } = await supabase
-    .from("categories")
-    .insert(categoryRows)
-    .select("*");
-
-  if (categoryError || !insertedCategories) {
-    return { inserted: false, reason: categoryError?.message ?? "No se pudieron crear las categorías." };
-  }
-
-  const categoryByName = new Map(insertedCategories.map((item) => [item.name, item]));
-  const subcategoryRows = demoCategories.flatMap((category) => {
-    const createdCategory = categoryByName.get(category.name);
-    return category.subcategories.map((subcategory) => ({
-      user_id: user.id,
-      category_id: createdCategory!.id,
-      name: subcategory.name,
-    }));
-  });
-
-  const { data: insertedSubcategories, error: subcategoryError } = await supabase
-    .from("subcategories")
-    .insert(subcategoryRows)
-    .select("*");
-
-  if (subcategoryError || !insertedSubcategories) {
-    return { inserted: false, reason: subcategoryError?.message ?? "No se pudieron crear las subcategorías." };
-  }
-
-  const subcategoryByName = new Map(insertedSubcategories.map((item) => [item.name, item]));
-  const currentMonth = getCurrentMonthValue();
-
-  const transactionRows = demoTransactions.map((item) => ({
-    user_id: user.id,
-    amount: item.amount,
-    occurred_on: `${currentMonth}-${String(item.occurredOn).padStart(2, "0")}`,
-    transaction_type: item.transactionType,
-    category_id: categoryByName.get(item.categoryKey)?.id ?? null,
-    subcategory_id: subcategoryByName.get(item.subcategoryKey)?.id ?? null,
-    payee: item.payee,
-    notes: item.notes,
-  }));
-
-  const recurringRows = demoRecurring.map((item) => ({
-    user_id: user.id,
-    name: item.name,
-    amount: item.amount,
-    transaction_type: item.transactionType,
-    category_id: categoryByName.get(item.categoryKey)?.id ?? null,
-    subcategory_id: subcategoryByName.get(item.subcategoryKey)?.id ?? null,
-    payee: item.payee,
-    notes: item.notes,
-    day_of_month: item.dayOfMonth,
-    start_date: `${currentMonth}-01`,
-  }));
-
-  const budgetRows = demoBudgetTargets.map((item) => ({
-    user_id: user.id,
-    category_id: categoryByName.get(item.categoryKey)?.id ?? "",
-    month: `${currentMonth}-01`,
-    planned_amount: item.plannedAmount,
-  }));
-
-  await supabase.from("transactions").insert(transactionRows);
-  await supabase.from("recurring_transactions").insert(recurringRows);
-  await supabase.from("budgets").insert(budgetRows);
-  await supabase.from("audit_log").insert({
-    user_id: user.id,
-    entity_type: "seed",
-    entity_id: user.id,
-    action: "sample_data_loaded",
-    payload: { month: currentMonth, records: transactionRows.length },
-  });
-
-  return { inserted: true, reason: null };
 }

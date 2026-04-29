@@ -1,10 +1,8 @@
 import { format } from "date-fns";
 import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
-import { loadSampleDataAction } from "@/app/actions";
 import { MonthPicker } from "@/components/dashboard/month-picker";
 import { OverviewChart } from "@/components/dashboard/overview-chart";
 import { TransactionForm } from "@/components/forms/transaction-form";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
 import { formatCurrency, formatLongDate, formatMonthLabel, getCurrentMonthValue } from "@/lib/format";
@@ -13,7 +11,7 @@ import { getCategories, getDashboardData } from "@/lib/queries";
 export default async function PanelPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string; seed?: string }>;
+  searchParams: Promise<{ month?: string }>;
 }) {
   const params = await searchParams;
   const month = params.month ?? getCurrentMonthValue();
@@ -38,16 +36,8 @@ export default async function PanelPage({
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <MonthPicker month={month} />
-            <form action={loadSampleDataAction}>
-              <Button type="submit" variant="secondary">
-                Cargar datos de ejemplo
-              </Button>
-            </form>
           </div>
         </div>
-        {params.seed === "ok" ? (
-          <p className="mt-4 text-sm text-success">Listo: se cargó un set de datos demo para este mes.</p>
-        ) : null}
       </header>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

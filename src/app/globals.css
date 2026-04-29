@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f1e8;
+  --foreground: #1d2a25;
+  --surface: rgba(255, 252, 247, 0.88);
+  --surface-strong: #fffdf8;
+  --surface-muted: #ede6d9;
+  --border: rgba(43, 63, 53, 0.12);
+  --ink-soft: #5d6f67;
+  --brand: #1f6a52;
+  --brand-strong: #174f3d;
+  --accent: #d6a756;
+  --danger: #b55643;
+  --success: #2f7d4f;
+  --warning: #b07a1f;
+  --shadow: 0 24px 60px rgba(58, 56, 46, 0.12);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(214, 167, 86, 0.18), transparent 28%),
+    linear-gradient(180deg, #fcfaf6 0%, #f3eee4 48%, #ece4d5 100%);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(31, 106, 82, 0.18);
+}
+
+.glass-panel {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.display-copy {
+  font-family: var(--font-display), serif;
+}
+
+.page-shell {
+  position: relative;
+}
+
+.page-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.6), transparent 22%),
+    radial-gradient(circle at 85% 12%, rgba(214, 167, 86, 0.14), transparent 28%),
+    radial-gradient(circle at 82% 84%, rgba(31, 106, 82, 0.1), transparent 24%);
+}
+
+.chart-grid {
+  background-image:
+    linear-gradient(to bottom, rgba(29, 42, 37, 0.05) 1px, transparent 1px),
+    linear-gradient(to right, rgba(29, 42, 37, 0.05) 1px, transparent 1px);
+  background-size: 100% 3.2rem, 3.2rem 100%;
+}

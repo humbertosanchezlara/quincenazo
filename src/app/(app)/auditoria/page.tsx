@@ -1,0 +1,49 @@
+import { Card } from "@/components/ui/card";
+import { getAuditLog } from "@/lib/queries";
+import { formatLongDate } from "@/lib/format";
+
+export default async function AuditoriaPage() {
+  const entries = await getAuditLog(60);
+
+  return (
+    <div className="space-y-6">
+      <header className="glass-panel rounded-[2rem] p-6 md:p-8">
+        <p className="text-sm uppercase tracking-[0.3em] text-foreground/45">Trazabilidad</p>
+        <h1 className="display-copy mt-3 text-4xl text-foreground md:text-5xl">
+          Auditoría de cambios.
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-foreground/68">
+          Historial cronológico para revisar altas, ajustes y eliminaciones sobre la capa financiera.
+        </p>
+      </header>
+      <Card>
+        <div className="space-y-3">
+          {entries.length ? (
+            entries.map((entry) => (
+              <div key={entry.id} className="rounded-[1.4rem] border border-border bg-white/65 p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">
+                      {entry.entity_type} · {entry.action.replaceAll("_", " ")}
+                    </p>
+                    <p className="mt-2 text-sm text-foreground/58">{entry.entity_id}</p>
+                  </div>
+                  <p className="text-sm text-foreground/45">{formatLongDate(entry.created_at)}</p>
+                </div>
+                {entry.payload ? (
+                  <pre className="mt-3 overflow-x-auto rounded-[1rem] bg-[#f4efe6] p-3 text-xs text-foreground/70">
+                    {JSON.stringify(entry.payload, null, 2)}
+                  </pre>
+                ) : null}
+              </div>
+            ))
+          ) : (
+            <div className="rounded-[1.4rem] border border-dashed border-border bg-white/45 p-5 text-sm text-foreground/60">
+              Aún no hay eventos auditables.
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}

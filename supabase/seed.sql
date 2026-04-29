@@ -1,0 +1,2 @@
+-- Quincenazo carga sus datos demo desde la app para sembrarlos sobre el usuario autenticado.
+-- Usa el botón "Cargar datos de ejemplo" dentro del panel después de iniciar sesión.

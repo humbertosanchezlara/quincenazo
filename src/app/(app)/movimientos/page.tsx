@@ -1,9 +1,9 @@
 import { format } from "date-fns";
-import { DeleteTransactionForm } from "@/components/forms/delete-transaction-form";
 import { TransactionForm } from "@/components/forms/transaction-form";
+import { MovimientosFilters } from "@/components/movimientos/movimientos-filters";
 import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatCurrency, formatLongDate, sanitizeMonth } from "@/lib/format";
+import { sanitizeMonth } from "@/lib/format";
 import { getCategories, getTransactionsByMonth } from "@/lib/queries";
 
 export default async function MovimientosPage({
@@ -44,44 +44,7 @@ export default async function MovimientosPage({
           </div>
           <StatusPill>{month}</StatusPill>
         </div>
-        <div className="space-y-3">
-          {transactions.length ? (
-            transactions.map((transaction) => (
-              <div key={transaction.id} className="rounded-[1.4rem] border border-border bg-white/65 p-4">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <p className="font-semibold text-foreground">{transaction.payee}</p>
-                      <StatusPill tone={transaction.transaction_type === "income" ? "success" : "neutral"}>
-                        {transaction.transaction_type === "income" ? "Ingreso" : "Gasto"}
-                      </StatusPill>
-                    </div>
-                    <p className="mt-2 text-sm text-foreground/58">
-                      {transaction.category?.name ?? "Sin categoría"}
-                      {transaction.subcategory ? ` · ${transaction.subcategory.name}` : ""}
-                      {" · "}
-                      {formatLongDate(transaction.occurred_on)}
-                    </p>
-                    {transaction.notes ? (
-                      <p className="mt-2 text-sm text-foreground/60">{transaction.notes}</p>
-                    ) : null}
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <p className="text-lg font-semibold text-foreground">
-                      {transaction.transaction_type === "income" ? "+" : "-"}
-                      {formatCurrency(transaction.amount)}
-                    </p>
-                    <DeleteTransactionForm id={transaction.id} />
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="rounded-[1.4rem] border border-dashed border-border bg-white/45 p-5 text-sm text-foreground/60">
-              Todavía no hay movimientos para este mes.
-            </div>
-          )}
-        </div>
+        <MovimientosFilters transactions={transactions} categories={categories} />
       </Card>
     </div>
   );

@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 import { parseISO } from "date-fns";
-import { getCurrentMonthValue, getMonthBounds } from "@/lib/format";
+import { getCurrentMonthValue, getMonthBounds, getPreviousMonth } from "@/lib/format";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   AuditWithPayload,
@@ -247,19 +247,28 @@ export async function getReports() {
 }
 
 export async function getDashboardData(month = getCurrentMonthValue()) {
-  const [transactions, budgets, categories, recurring, auditLog] =
+  const prevMonth = getPreviousMonth(month);
+  const [transactions, budgets, categories, recurring, auditLog, prevTransactions] =
     await Promise.all([
       getTransactionsByMonth(month),
       getBudgetsByMonth(month),
       getCategories(),
       getRecurringTransactions(),
       getAuditLog(8),
+      getTransactionsByMonth(prevMonth),
     ]);
 
   const income = transactions
     .filter((item) => item.transaction_type === "income")
     .reduce((total, item) => total + Number(item.amount), 0);
   const expenses = transactions
+    .filter((item) => item.transaction_type === "expense")
+    .reduce((total, item) => total + Number(item.amount), 0);
+
+  const prevIncome = prevTransactions
+    .filter((item) => item.transaction_type === "income")
+    .reduce((total, item) => total + Number(item.amount), 0);
+  const prevExpenses = prevTransactions
     .filter((item) => item.transaction_type === "expense")
     .reduce((total, item) => total + Number(item.amount), 0);
 
@@ -310,6 +319,9 @@ export async function getDashboardData(month = getCurrentMonthValue()) {
       expenses,
       net: income - expenses,
       savingsRate: income > 0 ? Math.max(0, ((income - expenses) / income) * 100) : 0,
+      prevIncome,
+      prevExpenses,
+      prevNet: prevIncome - prevExpenses,
     },
     categoryBreakdown: uncappedCategoryBreakdown,
     budgetComparisons,

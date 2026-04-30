@@ -28,8 +28,19 @@ const highlights = [
   },
 ];
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const auth = await getAuthState();
+  const params = await searchParams;
+  const authError =
+    params.error === "google-auth"
+      ? "No se pudo iniciar con Google. Revisa que el proveedor esté habilitado en Supabase."
+      : params.error === "config"
+        ? "Falta configurar Supabase o la URL pública del proyecto."
+        : null;
 
   if (auth.configured && auth.user) {
     redirect("/panel");
@@ -72,10 +83,10 @@ export default async function HomePage() {
         <div className="grid gap-6">
           <Card className="p-8">
             <p className="text-sm uppercase tracking-[0.3em] text-foreground/45">Entrar</p>
-            <h2 className="display-copy mt-3 text-4xl text-foreground">Accede con link mágico.</h2>
+            <h2 className="display-copy mt-3 text-4xl text-foreground">Accede sin depender de magic links.</h2>
             <p className="mt-3 text-sm leading-7 text-foreground/68">
-              Usa Supabase Auth para iniciar sesión sin contraseña y empezar a capturar
-              tus movimientos reales desde el primer minuto.
+              Usa Google o correo con contraseña para entrar más rápido y evitar límites
+              incómodos de envío de email al iniciar sesión.
             </p>
             <div className="mt-6">
               <SignInForm />
@@ -101,6 +112,11 @@ export default async function HomePage() {
               <div className="mt-6 rounded-[1.5rem] border border-dashed border-brand/35 bg-brand/6 p-4 text-sm text-foreground/68">
                 Falta configurar `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`
                 para activar la sesión y la persistencia.
+              </div>
+            ) : null}
+            {authError ? (
+              <div className="mt-4 rounded-[1.5rem] border border-dashed border-danger/35 bg-danger/6 p-4 text-sm text-danger">
+                {authError}
               </div>
             ) : null}
             <div className="mt-6">

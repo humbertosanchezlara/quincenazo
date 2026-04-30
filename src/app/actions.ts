@@ -15,6 +15,10 @@ type ActionState = {
 const success = (message: string): ActionState => ({ ok: true, message });
 const failure = (message: string): ActionState => ({ ok: false, message });
 
+function getAuthRedirectUrl() {
+  return `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/auth/callback`;
+}
+
 async function logAudit(entityType: string, entityId: string, action: string, payload?: unknown) {
   const supabase = await createSupabaseServerClient();
   const user = await getCurrentUserOrThrow();
@@ -33,9 +37,18 @@ export async function signInAction(
   _previousState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const email = z.string().email("Escribe un correo válido.").safeParse(formData.get("email"));
-  if (!email.success) {
-    return failure(email.error.issues[0]?.message ?? "Correo inválido.");
+  const parsed = z
+    .object({
+      email: z.string().email("Escribe un correo válido."),
+      password: z.string().min(8, "Tu contraseña debe tener al menos 8 caracteres."),
+    })
+    .safeParse({
+      email: formData.get("email"),
+      password: formData.get("password"),
+    });
+
+  if (!parsed.success) {
+    return failure(parsed.error.issues[0]?.message ?? "Credenciales inválidas.");
   }
 
   const supabase = await createSupabaseServerClient();
@@ -43,11 +56,51 @@ export async function signInAction(
     return failure("Configura Supabase antes de iniciar sesión.");
   }
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const { error } = await supabase.auth.signInWithOtp({
-    email: email.data,
+  const { error } = await supabase.auth.signInWithPassword({
+    email: parsed.data.email,
+    password: parsed.data.password,
+  });
+
+  if (error) {
+    return failure(error.message);
+  }
+
+  redirect("/panel");
+}
+
+export async function signUpAction(
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = z
+    .object({
+      email: z.string().email("Escribe un correo válido."),
+      password: z.string().min(8, "Tu contraseña debe tener al menos 8 caracteres."),
+      fullName: z.string().min(2, "Escribe tu nombre.").optional().or(z.literal("")),
+    })
+    .safeParse({
+      email: formData.get("email"),
+      password: formData.get("password"),
+      fullName: formData.get("full_name"),
+    });
+
+  if (!parsed.success) {
+    return failure(parsed.error.issues[0]?.message ?? "Revisa tus datos.");
+  }
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return failure("Configura Supabase antes de crear tu cuenta.");
+  }
+
+  const { error } = await supabase.auth.signUp({
+    email: parsed.data.email,
+    password: parsed.data.password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: getAuthRedirectUrl(),
+      data: {
+        full_name: parsed.data.fullName || null,
+      },
     },
   });
 
@@ -55,7 +108,29 @@ export async function signInAction(
     return failure(error.message);
   }
 
-  return success("Te mandamos un link mágico a tu correo.");
+  return success(
+    "Cuenta creada. Revisa tu correo para confirmar el acceso si Supabase tiene confirmación de email activa.",
+  );
+}
+
+export async function signInWithGoogleAction() {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    redirect("/?error=config");
+  }
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: getAuthRedirectUrl(),
+    },
+  });
+
+  if (error || !data.url) {
+    redirect("/?error=google-auth");
+  }
+
+  redirect(data.url);
 }
 
 export async function signOutAction() {

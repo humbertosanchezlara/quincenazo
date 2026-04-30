@@ -11,7 +11,7 @@ Quincenazo es una app de finanzas personales en `Next.js + Supabase`, en españo
 
 ## Funcionalidades incluidas
 
-- Inicio de sesión con magic link por Supabase
+- Inicio de sesión con Google OAuth o correo + contraseña por Supabase
 - Captura manual de ingresos y gastos
 - Categorías y subcategorías personalizables
 - Presupuestos mensuales por categoría
@@ -37,7 +37,11 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 2. Corre la migración en `supabase/migrations/202604291620_quincenazo_schema.sql`.
 3. En Authentication:
    - habilita Email
-   - configura el redirect URL a `http://localhost:3000/auth/callback`
+   - habilita Google en `Authentication > Providers`
+   - configura los redirect URLs:
+     - `http://localhost:3000/auth/callback`
+     - `https://tu-dominio.vercel.app/auth/callback`
+   - configura el `Site URL` según tu ambiente público, por ejemplo `https://tu-dominio.vercel.app`
 
 ## Desarrollo
 

@@ -35,8 +35,10 @@ export function TransactionForm({
   let suggestion: { categoryId: string; subcategoryId: string } | null = null;
   if (haystack) {
     for (const category of categories) {
-      const match = category.subcategories.find((subcategory) =>
-        haystack.includes(subcategory.name.toLowerCase().split(" ")[0] ?? ""),
+      const match = category.subcategories.find(
+        (subcategory) =>
+          subcategory.name.length >= 3 &&
+          haystack.includes(subcategory.name.toLowerCase()),
       );
       if (match) {
         suggestion = { categoryId: category.id, subcategoryId: match.id };

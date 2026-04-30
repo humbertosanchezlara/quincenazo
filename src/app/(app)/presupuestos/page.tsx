@@ -3,7 +3,7 @@ import { BudgetForm } from "@/components/forms/budget-form";
 import { RecurringForm } from "@/components/forms/recurring-form";
 import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatCurrency, formatMonthLabel, getCurrentMonthValue } from "@/lib/format";
+import { formatCurrency, formatMonthLabel, sanitizeMonth } from "@/lib/format";
 import { getBudgetsByMonth, getCategories, getDashboardData, getRecurringTransactions } from "@/lib/queries";
 
 export default async function PresupuestosPage({
@@ -12,7 +12,7 @@ export default async function PresupuestosPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const params = await searchParams;
-  const month = params.month ?? getCurrentMonthValue();
+  const month = sanitizeMonth(params.month);
   const [budgets, categories, recurring, dashboard] = await Promise.all([
     getBudgetsByMonth(month),
     getCategories(),
@@ -66,12 +66,17 @@ export default async function PresupuestosPage({
                   </div>
                   <div className="mt-3 h-3 overflow-hidden rounded-full bg-surface-muted">
                     <div
-                      className="h-full rounded-full bg-brand"
+                      className={`h-full rounded-full ${item.variance < 0 ? "bg-danger" : "bg-brand"}`}
                       style={{
                         width: `${Math.min((item.actual / Math.max(item.planned, 1)) * 100, 100)}%`,
                       }}
                     />
                   </div>
+                  {item.variance < 0 ? (
+                    <p className="mt-1 text-xs text-danger">
+                      {((item.actual / Math.max(item.planned, 1)) * 100).toFixed(0)}% del presupuesto usado
+                    </p>
+                  ) : null}
                 </div>
               ))
             ) : (

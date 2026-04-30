@@ -28,7 +28,7 @@ export function RecurringForm({
           <option value="expense">Gasto</option>
           <option value="income">Ingreso</option>
         </Field>
-        <Field label="Día del mes" name="day_of_month" type="number" min="1" max="28" defaultValue="5" />
+        <Field label="Día del mes" name="day_of_month" type="number" min="1" max="31" defaultValue="5" />
       </div>
       <Field as="select" label="Categoría" name="category_id">
         <option value="">Opcional</option>

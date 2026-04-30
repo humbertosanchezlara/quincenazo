@@ -1,9 +1,19 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { getAuditLog } from "@/lib/queries";
 import { formatLongDate } from "@/lib/format";
 
-export default async function AuditoriaPage() {
-  const entries = await getAuditLog(60);
+const PAGE_SIZE = 20;
+
+export default async function AuditoriaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+  const entries = await getAuditLog(PAGE_SIZE, (page - 1) * PAGE_SIZE);
+  const hasMore = entries.length === PAGE_SIZE;
 
   return (
     <div className="space-y-6">
@@ -39,9 +49,24 @@ export default async function AuditoriaPage() {
             ))
           ) : (
             <div className="rounded-[1.4rem] border border-dashed border-border bg-white/45 p-5 text-sm text-foreground/60">
-              Aún no hay eventos auditables.
+              {page > 1 ? "No hay más entradas en esta página." : "Aún no hay eventos auditables."}
             </div>
           )}
+          {(page > 1 || hasMore) ? (
+            <div className="flex items-center justify-between pt-2">
+              {page > 1 ? (
+                <a href={`/auditoria?page=${page - 1}`}>
+                  <Button variant="ghost">← Anterior</Button>
+                </a>
+              ) : <span />}
+              <span className="text-sm text-foreground/45">Página {page}</span>
+              {hasMore ? (
+                <a href={`/auditoria?page=${page + 1}`}>
+                  <Button variant="ghost">Siguiente →</Button>
+                </a>
+              ) : <span />}
+            </div>
+          ) : null}
         </div>
       </Card>
     </div>

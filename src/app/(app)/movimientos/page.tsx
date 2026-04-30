@@ -1,10 +1,9 @@
 import { format } from "date-fns";
-import { deleteTransactionAction } from "@/app/actions";
+import { DeleteTransactionForm } from "@/components/forms/delete-transaction-form";
 import { TransactionForm } from "@/components/forms/transaction-form";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatCurrency, formatLongDate, getCurrentMonthValue } from "@/lib/format";
+import { formatCurrency, formatLongDate, sanitizeMonth } from "@/lib/format";
 import { getCategories, getTransactionsByMonth } from "@/lib/queries";
 
 export default async function MovimientosPage({
@@ -13,7 +12,7 @@ export default async function MovimientosPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const params = await searchParams;
-  const month = params.month ?? getCurrentMonthValue();
+  const month = sanitizeMonth(params.month);
   const [transactions, categories] = await Promise.all([
     getTransactionsByMonth(month),
     getCategories(),
@@ -72,12 +71,7 @@ export default async function MovimientosPage({
                       {transaction.transaction_type === "income" ? "+" : "-"}
                       {formatCurrency(transaction.amount)}
                     </p>
-                    <form action={deleteTransactionAction}>
-                      <input type="hidden" name="id" value={transaction.id} />
-                      <Button type="submit" variant="ghost" className="text-danger">
-                        Eliminar
-                      </Button>
-                    </form>
+                    <DeleteTransactionForm id={transaction.id} />
                   </div>
                 </div>
               </div>

@@ -5,7 +5,7 @@ import { OverviewChart } from "@/components/dashboard/overview-chart";
 import { TransactionForm } from "@/components/forms/transaction-form";
 import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatCurrency, formatLongDate, formatMonthLabel, getCurrentMonthValue } from "@/lib/format";
+import { formatCurrency, formatLongDate, formatMonthLabel, sanitizeMonth } from "@/lib/format";
 import { getCategories, getDashboardData } from "@/lib/queries";
 
 export default async function PanelPage({
@@ -14,7 +14,7 @@ export default async function PanelPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const params = await searchParams;
-  const month = params.month ?? getCurrentMonthValue();
+  const month = sanitizeMonth(params.month);
   const [dashboard, categories] = await Promise.all([
     getDashboardData(month),
     getCategories(),

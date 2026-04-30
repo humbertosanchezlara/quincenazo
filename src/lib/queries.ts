@@ -53,6 +53,10 @@ export async function ensureProfile() {
   await supabase.from("profiles").upsert({
     id: user.id,
     email: user.email ?? null,
+    full_name:
+      typeof user.user_metadata.full_name === "string"
+        ? user.user_metadata.full_name
+        : null,
   });
 
   return user;

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BellRing, ChartColumnBig, FolderTree, NotebookTabs, ReceiptText, Repeat, ShieldCheck } from "lucide-react";
 import { signOutAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const navigation = [
   { href: "/panel", label: "Panel", icon: ChartColumnBig },
@@ -28,8 +29,11 @@ export function AppShell({
               <p className="text-sm uppercase tracking-[0.3em] text-foreground/45">Quincenazo</p>
               <h1 className="display-copy mt-2 text-3xl text-foreground">La quincena, clara.</h1>
             </div>
-            <div className="rounded-full bg-brand/10 p-3 text-brand">
-              <Repeat className="h-5 w-5" />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <div className="rounded-full bg-brand/10 p-3 text-brand">
+                <Repeat className="h-5 w-5" />
+              </div>
             </div>
           </div>
           <nav className="space-y-2">

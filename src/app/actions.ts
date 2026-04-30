@@ -455,3 +455,81 @@ export async function upsertRecurringAction(
   revalidatePath("/presupuestos");
   return success("Movimiento recurrente guardado.");
 }
+
+export async function deleteCategoryAction(
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const id = String(formData.get("id") || "");
+  if (!id) return failure("ID de categoría inválido.");
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return failure("Supabase no está configurado.");
+
+  const user = await getCurrentUserOrThrow();
+
+  const { error } = await supabase
+    .from("categories")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return failure(error.message);
+
+  await logAudit("category", id, "deleted");
+  revalidatePath("/categorias");
+  revalidatePath("/movimientos");
+  return success("Categoría eliminada.");
+}
+
+export async function deleteSubcategoryAction(
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const id = String(formData.get("id") || "");
+  if (!id) return failure("ID de subcategoría inválido.");
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return failure("Supabase no está configurado.");
+
+  const user = await getCurrentUserOrThrow();
+
+  const { error } = await supabase
+    .from("subcategories")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return failure(error.message);
+
+  await logAudit("subcategory", id, "deleted");
+  revalidatePath("/categorias");
+  revalidatePath("/movimientos");
+  return success("Subcategoría eliminada.");
+}
+
+export async function deleteRecurringAction(
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const id = String(formData.get("id") || "");
+  if (!id) return failure("ID de recurrencia inválido.");
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return failure("Supabase no está configurado.");
+
+  const user = await getCurrentUserOrThrow();
+
+  const { error } = await supabase
+    .from("recurring_transactions")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return failure(error.message);
+
+  await logAudit("recurring_transaction", id, "deleted");
+  revalidatePath("/panel");
+  revalidatePath("/presupuestos");
+  return success("Recurrencia eliminada.");
+}

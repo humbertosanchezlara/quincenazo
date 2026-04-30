@@ -55,6 +55,11 @@ export function sanitizeMonth(value: string | undefined): string {
   return value && isValidMonth(value) ? value : getCurrentMonthValue();
 }
 
+export function getPreviousMonth(month: string): string {
+  const date = parse(`${month}-01`, "yyyy-MM-dd", new Date());
+  return format(subMonths(date, 1), "yyyy-MM");
+}
+
 export function formatShortDate(value: string) {
   return format(new Date(value), "d MMM", { locale: es });
 }

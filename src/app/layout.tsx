@@ -28,6 +28,14 @@ export default function RootLayout({
       lang="es-MX"
       className={`${manrope.variable} ${fraunces.variable} h-full antialiased`}
     >
+      <head>
+        {/* Previene flash of wrong theme antes de que React hidrate */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.setAttribute('data-theme','dark')}}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

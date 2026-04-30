@@ -1,6 +1,8 @@
 import { CategoryForm, SubcategoryForm } from "@/components/forms/category-forms";
+import { DeleteWithConfirm } from "@/components/forms/delete-with-confirm";
 import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
+import { deleteCategoryAction, deleteSubcategoryAction } from "@/app/actions";
 import { getCategories } from "@/lib/queries";
 
 export default async function CategoriasPage() {
@@ -40,19 +42,22 @@ export default async function CategoriasPage() {
                   />
                   <p className="font-semibold text-foreground">{category.name}</p>
                 </div>
-                <StatusPill tone={category.transaction_type === "income" ? "success" : "neutral"}>
-                  {category.transaction_type === "income" ? "Ingreso" : "Gasto"}
-                </StatusPill>
+                <div className="flex items-center gap-2">
+                  <StatusPill tone={category.transaction_type === "income" ? "success" : "neutral"}>
+                    {category.transaction_type === "income" ? "Ingreso" : "Gasto"}
+                  </StatusPill>
+                  <DeleteWithConfirm id={category.id} action={deleteCategoryAction} label="Eliminar" />
+                </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {category.subcategories.length ? (
                   category.subcategories.map((subcategory) => (
-                    <span
-                      key={subcategory.id}
-                      className="rounded-full bg-surface-muted px-3 py-1 text-xs font-medium text-foreground/72"
-                    >
-                      {subcategory.name}
-                    </span>
+                    <div key={subcategory.id} className="flex items-center gap-1">
+                      <span className="rounded-full bg-surface-muted px-3 py-1 text-xs font-medium text-foreground/72">
+                        {subcategory.name}
+                      </span>
+                      <DeleteWithConfirm id={subcategory.id} action={deleteSubcategoryAction} label="×" />
+                    </div>
                   ))
                 ) : (
                   <span className="text-sm text-foreground/50">Sin subcategorías aún</span>

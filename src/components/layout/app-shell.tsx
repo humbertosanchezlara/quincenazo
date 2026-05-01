@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { BellRing, ChartColumnBig, FolderTree, NotebookTabs, ReceiptText, Repeat, ShieldCheck } from "lucide-react";
+import {
+  BellRing,
+  ChartColumnBig,
+  FolderTree,
+  NotebookTabs,
+  ReceiptText,
+  Repeat,
+  ShieldCheck,
+} from "lucide-react";
 import { signOutAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 
@@ -21,25 +29,35 @@ export function AppShell({
 }) {
   return (
     <div className="page-shell min-h-screen">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-6 px-4 py-4 lg:flex-row lg:px-6">
-        <aside className="glass-panel rounded-[2rem] p-5 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:w-[300px]">
-          <div className="mb-8 flex items-start justify-between gap-3">
+      <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-4 px-3 py-3 sm:px-4 sm:py-4 lg:min-h-screen lg:flex-row lg:gap-6 lg:px-6">
+        <aside className="glass-panel rounded-[2rem] p-4 sm:p-5 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:w-[300px] lg:p-5">
+          <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-foreground/45">Quincenazo</p>
-              <h1 className="display-copy mt-2 text-3xl text-foreground">La quincena, clara.</h1>
+              <p className="text-[0.72rem] uppercase tracking-[0.34em] text-foreground/42 sm:text-sm sm:tracking-[0.3em]">
+                Quincenazo
+              </p>
+              <h1 className="display-copy mt-2 max-w-[12ch] text-2xl leading-none text-foreground sm:text-3xl lg:text-[2.85rem]">
+                La quincena, clara.
+              </h1>
             </div>
-            <div className="rounded-full bg-brand/10 p-3 text-brand">
-              <Repeat className="h-5 w-5" />
+            <div className="flex shrink-0 items-center gap-2">
+              <div className="rounded-full border border-border bg-white/80 p-3 text-foreground/80">
+                <div className="h-5 w-5 rounded-full border border-foreground/55 bg-[linear-gradient(90deg,rgba(29,42,37,0.9)_0_50%,transparent_50%_100%)]" />
+              </div>
+              <div className="rounded-full bg-brand/10 p-3 text-brand">
+                <Repeat className="h-5 w-5" />
+              </div>
             </div>
           </div>
-          <nav className="space-y-2">
+
+          <nav className="mt-5 flex gap-2 overflow-x-auto pb-1 lg:mt-8 lg:block lg:space-y-2 lg:overflow-visible lg:pb-0">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-foreground/72 transition hover:bg-white/70 hover:text-foreground"
+                  className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-white/58 px-3 py-2 text-sm font-semibold text-foreground/72 transition hover:bg-white/82 hover:text-foreground lg:rounded-2xl lg:border-transparent lg:bg-transparent lg:px-4 lg:py-3"
                 >
                   <Icon className="h-4 w-4" />
                   {item.label}
@@ -47,14 +65,21 @@ export function AppShell({
               );
             })}
           </nav>
-          <div className="mt-8 rounded-[1.6rem] border border-border bg-white/65 p-4">
-            <p className="text-xs uppercase tracking-[0.24em] text-foreground/45">Sesión</p>
-            <p className="mt-2 text-sm font-medium text-foreground">{userEmail ?? "Cuenta activa"}</p>
-            <form action={signOutAction} className="mt-4">
-              <Button type="submit" variant="secondary" className="w-full">
-                Cerrar sesión
-              </Button>
-            </form>
+
+          <div className="mt-5 rounded-[1.4rem] border border-border bg-white/72 p-4 lg:mt-8 lg:rounded-[1.6rem]">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:flex-col lg:items-stretch">
+              <div className="min-w-0">
+                <p className="text-[0.7rem] uppercase tracking-[0.28em] text-foreground/45">Sesión</p>
+                <p className="mt-2 truncate text-sm font-medium text-foreground">
+                  {userEmail ?? "Cuenta activa"}
+                </p>
+              </div>
+              <form action={signOutAction} className="sm:w-auto lg:mt-4">
+                <Button type="submit" variant="secondary" className="w-full sm:px-5 lg:w-full">
+                  Cerrar sesión
+                </Button>
+              </form>
+            </div>
           </div>
         </aside>
         <main className="flex-1">{children}</main>

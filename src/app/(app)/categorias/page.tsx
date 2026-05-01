@@ -7,12 +7,14 @@ export default async function CategoriasPage() {
   const categories = await getCategories();
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+    <div className="grid gap-4 md:gap-6 xl:grid-cols-[0.9fr_1.1fr]">
       <div className="space-y-6">
         <Card>
           <div className="mb-4">
             <p className="text-sm uppercase tracking-[0.3em] text-foreground/45">Taxonomía</p>
-            <h1 className="display-copy mt-3 text-4xl text-foreground">Categorías personalizadas.</h1>
+            <h1 className="display-copy mt-3 text-3xl text-foreground md:text-4xl">
+              Categorías personalizadas.
+            </h1>
           </div>
           <CategoryForm />
         </Card>

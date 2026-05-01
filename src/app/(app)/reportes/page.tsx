@@ -10,13 +10,13 @@ export default async function ReportesPage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <header className="glass-panel rounded-[2rem] p-6 md:p-8">
+    <div className="space-y-4 md:space-y-6">
+      <header className="glass-panel rounded-[1.7rem] p-4 sm:rounded-[2rem] sm:p-6 md:p-8">
         <p className="text-sm uppercase tracking-[0.3em] text-foreground/45">Análisis</p>
-        <h1 className="display-copy mt-3 text-4xl text-foreground md:text-5xl">
+        <h1 className="display-copy mt-3 text-3xl text-foreground md:text-5xl">
           Reportes mensuales y varianza.
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-foreground/68">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-foreground/68 md:leading-7">
           Tendencia de ingreso, gasto y neto, con lectura de cuáles categorías están empujando la
           desviación del mes actual.
         </p>

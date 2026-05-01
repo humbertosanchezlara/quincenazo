@@ -23,13 +23,13 @@ export default async function PresupuestosPage({
   ]);
 
   return (
-    <div className="space-y-6">
-      <header className="glass-panel rounded-[2rem] p-6 md:p-8">
+    <div className="space-y-4 md:space-y-6">
+      <header className="glass-panel rounded-[1.7rem] p-4 sm:rounded-[2rem] sm:p-6 md:p-8">
         <p className="text-sm uppercase tracking-[0.3em] text-foreground/45">Planeación</p>
-        <h1 className="display-copy mt-3 text-4xl text-foreground md:text-5xl">
+        <h1 className="display-copy mt-3 text-3xl text-foreground md:text-5xl">
           Presupuestos de {formatMonthLabel(month)}
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-foreground/68">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-foreground/68 md:leading-7">
           Define techos por categoría, revisa la desviación real y administra cargos
           recurrentes para que el mes no te sorprenda.
         </p>

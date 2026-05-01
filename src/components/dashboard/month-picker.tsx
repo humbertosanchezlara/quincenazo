@@ -10,7 +10,7 @@ export function MonthPicker({ month }: { month: string }) {
 
   return (
     <select
-      className="rounded-full border border-border bg-white/85 px-4 py-2 text-sm font-medium text-foreground outline-none"
+      className="rounded-full border border-border bg-white/85 px-3 py-2 text-sm font-medium text-foreground outline-none sm:px-4"
       value={month}
       onChange={(event) => {
         const next = new URLSearchParams(searchParams.toString());

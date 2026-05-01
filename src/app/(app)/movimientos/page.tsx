@@ -1,15 +1,9 @@
 import { format } from "date-fns";
-import { deleteTransactionAction } from "@/app/actions";
 import { TransactionForm } from "@/components/forms/transaction-form";
-import { Button } from "@/components/ui/button";
+import { MovimientosFilters } from "@/components/movimientos/movimientos-filters";
 import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
-import {
-  formatCurrency,
-  formatLongDate,
-  formatMonthLabel,
-  getCurrentMonthValue,
-} from "@/lib/format";
+import { formatMonthLabel, sanitizeMonth } from "@/lib/format";
 import { getCategories, getTransactionsByMonth } from "@/lib/queries";
 
 export default async function MovimientosPage({
@@ -18,7 +12,7 @@ export default async function MovimientosPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const params = await searchParams;
-  const month = params.month ?? getCurrentMonthValue();
+  const month = sanitizeMonth(params.month);
   const [transactions, categories] = await Promise.all([
     getTransactionsByMonth(month),
     getCategories(),
@@ -48,54 +42,7 @@ export default async function MovimientosPage({
             </div>
             <StatusPill>{month}</StatusPill>
           </div>
-          <div className="space-y-3">
-            {transactions.length ? (
-              transactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="rounded-[1.4rem] border border-border bg-white/65 p-4"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <p className="font-semibold text-foreground">{transaction.payee}</p>
-                        <StatusPill
-                          tone={transaction.transaction_type === "income" ? "success" : "neutral"}
-                        >
-                          {transaction.transaction_type === "income" ? "Ingreso" : "Gasto"}
-                        </StatusPill>
-                      </div>
-                      <p className="mt-2 text-sm text-foreground/58">
-                        {transaction.category?.name ?? "Sin categoría"}
-                        {transaction.subcategory ? ` · ${transaction.subcategory.name}` : ""}
-                        {" · "}
-                        {formatLongDate(transaction.occurred_on)}
-                      </p>
-                      {transaction.notes ? (
-                        <p className="mt-2 text-sm text-foreground/60">{transaction.notes}</p>
-                      ) : null}
-                    </div>
-                    <div className="flex items-center justify-between gap-4 md:justify-end">
-                      <p className="text-lg font-semibold text-foreground">
-                        {transaction.transaction_type === "income" ? "+" : "-"}
-                        {formatCurrency(transaction.amount)}
-                      </p>
-                      <form action={deleteTransactionAction}>
-                        <input type="hidden" name="id" value={transaction.id} />
-                        <Button type="submit" variant="ghost" className="text-danger">
-                          Eliminar
-                        </Button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="rounded-[1.4rem] border border-dashed border-border bg-white/45 p-5 text-sm text-foreground/60">
-                Todavía no hay movimientos para este mes.
-              </div>
-            )}
-          </div>
+          <MovimientosFilters transactions={transactions} categories={categories} />
         </Card>
 
         <Card className="order-2 space-y-4 xl:order-2">

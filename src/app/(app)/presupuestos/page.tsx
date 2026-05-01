@@ -1,9 +1,11 @@
 import { format } from "date-fns";
 import { BudgetForm } from "@/components/forms/budget-form";
+import { DeleteWithConfirm } from "@/components/forms/delete-with-confirm";
 import { RecurringForm } from "@/components/forms/recurring-form";
 import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatCurrency, formatMonthLabel, getCurrentMonthValue } from "@/lib/format";
+import { deleteRecurringAction } from "@/app/actions";
+import { formatCurrency, formatMonthLabel, sanitizeMonth } from "@/lib/format";
 import { getBudgetsByMonth, getCategories, getDashboardData, getRecurringTransactions } from "@/lib/queries";
 
 export default async function PresupuestosPage({
@@ -12,7 +14,7 @@ export default async function PresupuestosPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const params = await searchParams;
-  const month = params.month ?? getCurrentMonthValue();
+  const month = sanitizeMonth(params.month);
   const [budgets, categories, recurring, dashboard] = await Promise.all([
     getBudgetsByMonth(month),
     getCategories(),
@@ -66,12 +68,17 @@ export default async function PresupuestosPage({
                   </div>
                   <div className="mt-3 h-3 overflow-hidden rounded-full bg-surface-muted">
                     <div
-                      className="h-full rounded-full bg-brand"
+                      className={`h-full rounded-full ${item.variance < 0 ? "bg-danger" : "bg-brand"}`}
                       style={{
                         width: `${Math.min((item.actual / Math.max(item.planned, 1)) * 100, 100)}%`,
                       }}
                     />
                   </div>
+                  {item.variance < 0 ? (
+                    <p className="mt-1 text-xs text-danger">
+                      {((item.actual / Math.max(item.planned, 1)) * 100).toFixed(0)}% del presupuesto usado
+                    </p>
+                  ) : null}
                 </div>
               ))
             ) : (
@@ -108,9 +115,12 @@ export default async function PresupuestosPage({
                         {item.payee} · {item.category?.name ?? "Sin categoría"}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-foreground">{formatCurrency(item.amount)}</p>
-                      <p className="text-xs text-foreground/45">Día {item.day_of_month}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-lg font-semibold text-foreground">{formatCurrency(item.amount)}</p>
+                        <p className="text-xs text-foreground/45">Día {item.day_of_month}</p>
+                      </div>
+                      <DeleteWithConfirm id={item.id} action={deleteRecurringAction} label="Eliminar" />
                     </div>
                   </div>
                 </div>

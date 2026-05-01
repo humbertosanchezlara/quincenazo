@@ -219,17 +219,32 @@ export async function upsertTransactionAction(
   return success(parsed.data.id ? "Movimiento actualizado." : "Movimiento guardado.");
 }
 
-export async function deleteTransactionAction(formData: FormData) {
+export async function deleteTransactionAction(
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const id = String(formData.get("id") || "");
-  const supabase = await createSupabaseServerClient();
-  const user = await getCurrentUserOrThrow();
-  if (!supabase || !id) return;
+  if (!id) return failure("ID de movimiento inválido.");
 
-  await supabase.from("transactions").delete().eq("id", id).eq("user_id", user.id);
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return failure("Supabase no está configurado.");
+
+  const user = await getCurrentUserOrThrow();
+
+  const { error } = await supabase
+    .from("transactions")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return failure(error.message);
+
   await logAudit("transaction", id, "deleted");
   revalidatePath("/panel");
   revalidatePath("/movimientos");
   revalidatePath("/reportes");
+
+  return success("Movimiento eliminado.");
 }
 
 const budgetSchema = z.object({
@@ -384,7 +399,7 @@ const recurringSchema = z.object({
   subcategoryId: z.string().nullable().optional(),
   payee: z.string().min(2),
   notes: z.string().optional(),
-  dayOfMonth: z.coerce.number().min(1).max(28),
+  dayOfMonth: z.coerce.number().min(1).max(31),
   startDate: z.string().min(1),
 });
 
@@ -439,4 +454,82 @@ export async function upsertRecurringAction(
   revalidatePath("/panel");
   revalidatePath("/presupuestos");
   return success("Movimiento recurrente guardado.");
+}
+
+export async function deleteCategoryAction(
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const id = String(formData.get("id") || "");
+  if (!id) return failure("ID de categoría inválido.");
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return failure("Supabase no está configurado.");
+
+  const user = await getCurrentUserOrThrow();
+
+  const { error } = await supabase
+    .from("categories")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return failure(error.message);
+
+  await logAudit("category", id, "deleted");
+  revalidatePath("/categorias");
+  revalidatePath("/movimientos");
+  return success("Categoría eliminada.");
+}
+
+export async function deleteSubcategoryAction(
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const id = String(formData.get("id") || "");
+  if (!id) return failure("ID de subcategoría inválido.");
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return failure("Supabase no está configurado.");
+
+  const user = await getCurrentUserOrThrow();
+
+  const { error } = await supabase
+    .from("subcategories")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return failure(error.message);
+
+  await logAudit("subcategory", id, "deleted");
+  revalidatePath("/categorias");
+  revalidatePath("/movimientos");
+  return success("Subcategoría eliminada.");
+}
+
+export async function deleteRecurringAction(
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const id = String(formData.get("id") || "");
+  if (!id) return failure("ID de recurrencia inválido.");
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return failure("Supabase no está configurado.");
+
+  const user = await getCurrentUserOrThrow();
+
+  const { error } = await supabase
+    .from("recurring_transactions")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return failure(error.message);
+
+  await logAudit("recurring_transaction", id, "deleted");
+  revalidatePath("/panel");
+  revalidatePath("/presupuestos");
+  return success("Recurrencia eliminada.");
 }

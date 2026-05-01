@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 import { parseISO } from "date-fns";
-import { getCurrentMonthValue, getMonthBounds } from "@/lib/format";
+import { getCurrentMonthValue, getMonthBounds, getPreviousMonth } from "@/lib/format";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   AuditWithPayload,
@@ -105,34 +105,29 @@ export async function maybeSyncRecurringTransactions(month: string) {
     if (endDate && endDate < targetDate) continue;
 
     const recurringInstanceKey = `${item.id}-${month}`;
-
-    const { data: existing } = await supabase
-      .from("transactions")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("recurring_instance_key", recurringInstanceKey)
-      .maybeSingle();
-
-    if (existing) continue;
-
     const safeDay = Math.min(item.day_of_month, new Date(year, monthNumber, 0).getDate());
     const occurredOn = new Date(year, monthNumber - 1, safeDay)
       .toISOString()
       .slice(0, 10);
 
-    await supabase.from("transactions").insert({
-      user_id: user.id,
-      amount: item.amount,
-      occurred_on: occurredOn,
-      transaction_type: item.transaction_type,
-      category_id: item.category_id,
-      subcategory_id: item.subcategory_id,
-      payee: item.payee,
-      notes: item.notes,
-      recurring_transaction_id: item.id,
-      recurring_instance_key: recurringInstanceKey,
-      is_recurring_generated: true,
-    });
+    // upsert con ignoreDuplicates evita la race condition check-then-insert
+    // El unique constraint (user_id, recurring_instance_key) garantiza idempotencia
+    await supabase.from("transactions").upsert(
+      {
+        user_id: user.id,
+        amount: item.amount,
+        occurred_on: occurredOn,
+        transaction_type: item.transaction_type,
+        category_id: item.category_id,
+        subcategory_id: item.subcategory_id,
+        payee: item.payee,
+        notes: item.notes,
+        recurring_transaction_id: item.id,
+        recurring_instance_key: recurringInstanceKey,
+        is_recurring_generated: true,
+      },
+      { onConflict: "user_id,recurring_instance_key", ignoreDuplicates: true },
+    );
   }
 }
 
@@ -206,7 +201,7 @@ export async function getRecurringTransactions() {
   return (data ?? []) as RecurringWithRelations[];
 }
 
-export async function getAuditLog(limit = 40) {
+export async function getAuditLog(limit = 40, offset = 0) {
   const user = await getCurrentUserOrThrow();
   const supabase = await createSupabaseServerClient();
   if (!supabase) return [];
@@ -216,7 +211,7 @@ export async function getAuditLog(limit = 40) {
     .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .range(offset, offset + limit - 1);
 
   return (data ?? []) as AuditWithPayload[];
 }
@@ -252,19 +247,28 @@ export async function getReports() {
 }
 
 export async function getDashboardData(month = getCurrentMonthValue()) {
-  const [transactions, budgets, categories, recurring, auditLog] =
+  const prevMonth = getPreviousMonth(month);
+  const [transactions, budgets, categories, recurring, auditLog, prevTransactions] =
     await Promise.all([
       getTransactionsByMonth(month),
       getBudgetsByMonth(month),
       getCategories(),
       getRecurringTransactions(),
       getAuditLog(8),
+      getTransactionsByMonth(prevMonth),
     ]);
 
   const income = transactions
     .filter((item) => item.transaction_type === "income")
     .reduce((total, item) => total + Number(item.amount), 0);
   const expenses = transactions
+    .filter((item) => item.transaction_type === "expense")
+    .reduce((total, item) => total + Number(item.amount), 0);
+
+  const prevIncome = prevTransactions
+    .filter((item) => item.transaction_type === "income")
+    .reduce((total, item) => total + Number(item.amount), 0);
+  const prevExpenses = prevTransactions
     .filter((item) => item.transaction_type === "expense")
     .reduce((total, item) => total + Number(item.amount), 0);
 
@@ -315,6 +319,9 @@ export async function getDashboardData(month = getCurrentMonthValue()) {
       expenses,
       net: income - expenses,
       savingsRate: income > 0 ? Math.max(0, ((income - expenses) / income) * 100) : 0,
+      prevIncome,
+      prevExpenses,
+      prevNet: prevIncome - prevExpenses,
     },
     categoryBreakdown: uncappedCategoryBreakdown,
     budgetComparisons,

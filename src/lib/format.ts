@@ -47,6 +47,19 @@ export function getCurrentMonthValue() {
   return format(new Date(), "yyyy-MM");
 }
 
+export function isValidMonth(value: string): boolean {
+  return /^\d{4}-\d{2}$/.test(value);
+}
+
+export function sanitizeMonth(value: string | undefined): string {
+  return value && isValidMonth(value) ? value : getCurrentMonthValue();
+}
+
+export function getPreviousMonth(month: string): string {
+  const date = parse(`${month}-01`, "yyyy-MM-dd", new Date());
+  return format(subMonths(date, 1), "yyyy-MM");
+}
+
 export function formatShortDate(value: string) {
   return format(new Date(value), "d MMM", { locale: es });
 }

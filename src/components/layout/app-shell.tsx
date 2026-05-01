@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { signOutAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const navigation = [
   { href: "/panel", label: "Panel", icon: ChartColumnBig },
@@ -41,9 +42,7 @@ export function AppShell({
               </h1>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <div className="rounded-full border border-border bg-white/80 p-3 text-foreground/80">
-                <div className="h-5 w-5 rounded-full border border-foreground/55 bg-[linear-gradient(90deg,rgba(29,42,37,0.9)_0_50%,transparent_50%_100%)]" />
-              </div>
+              <ThemeToggle />
               <div className="rounded-full bg-brand/10 p-3 text-brand">
                 <Repeat className="h-5 w-5" />
               </div>

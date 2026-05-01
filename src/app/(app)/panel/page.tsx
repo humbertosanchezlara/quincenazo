@@ -10,7 +10,7 @@ import {
   formatLongDate,
   formatMonthLabel,
   formatShortDate,
-  getCurrentMonthValue,
+  sanitizeMonth,
 } from "@/lib/format";
 import { getCategories, getDashboardData } from "@/lib/queries";
 import type { TransactionWithRelations } from "@/lib/types";
@@ -37,7 +37,7 @@ export default async function PanelPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const params = await searchParams;
-  const month = params.month ?? getCurrentMonthValue();
+  const month = sanitizeMonth(params.month);
   const [dashboard, categories] = await Promise.all([
     getDashboardData(month),
     getCategories(),
@@ -48,24 +48,28 @@ export default async function PanelPage({
     {
       label: "Ingresos",
       value: dashboard.summary.income,
+      prev: dashboard.summary.prevIncome,
       icon: TrendingUp,
       tone: "success" as const,
     },
     {
       label: "Gastos",
       value: dashboard.summary.expenses,
+      prev: dashboard.summary.prevExpenses,
       icon: TrendingDown,
       tone: "danger" as const,
     },
     {
       label: "Neto",
       value: dashboard.summary.net,
+      prev: dashboard.summary.prevNet,
       icon: Wallet,
       tone: dashboard.summary.net >= 0 ? ("success" as const) : ("danger" as const),
     },
     {
       label: "Ahorro",
       value: dashboard.summary.savingsRate,
+      prev: null,
       suffix: "%",
       icon: Wallet,
       tone: "neutral" as const,
@@ -235,6 +239,11 @@ export default async function PanelPage({
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {summaryCards.map((item) => {
             const Icon = item.icon;
+            const pctChange =
+              item.prev != null && item.prev !== 0
+                ? ((item.value - item.prev) / Math.abs(item.prev)) * 100
+                : null;
+
             return (
               <Card key={item.label} className="rounded-[1.8rem] p-5">
                 <div className="flex items-center justify-between">
@@ -250,10 +259,18 @@ export default async function PanelPage({
                     <Icon className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 flex items-center gap-2">
                   <StatusPill tone={item.tone}>
                     {item.label === "Ahorro" ? "Meta saludable" : "Actualizado al momento"}
                   </StatusPill>
+                  {pctChange !== null && (
+                    <span
+                      className={`text-xs font-semibold ${pctChange >= 0 ? "text-success" : "text-danger"}`}
+                    >
+                      {pctChange >= 0 ? "↑" : "↓"} {Math.abs(pctChange).toFixed(0)}% vs mes
+                      anterior
+                    </span>
+                  )}
                 </div>
               </Card>
             );
